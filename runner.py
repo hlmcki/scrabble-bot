@@ -17,4 +17,5 @@ while count < 3:
     start = (input("Start:     "))
     direction = input("Direction: ")
     game.play_word(word, start, direction)
+    game.draw_tiles()
     count += 1
