@@ -7,8 +7,8 @@ players = int(input("Number of players: "))
 game = Scrabble(players=players)
 ai = ScrabbleAI()
 
+# Run game
 count = 0
-
 while count < 3:
     game.print()
     print("Turn:      Player", game.turn)
