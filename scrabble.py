@@ -396,7 +396,7 @@ class Scrabble():
     
     def play_word(self, word, start, direction):
         """
-        Plays a word on the board
+        Plays a word on board and updates scores accordingly
         """
         # Play word on board
         x = COORDINATES[start]["x"]
@@ -412,8 +412,18 @@ class Scrabble():
                     self.board[y + i][x] = " " + letter
                     self.hands[self.turn].remove(letter)
             
+        # Update scores
+        location = []
+        for i in range(len(word)):
+            location.append((x, y))
+            if direction == "A":
+                x += 1
+            if direction == "D":
+                y += 1
+
+        self.scores[self.turn] += 1
+        
         # Update turn
-        # self.scores[self.turn] += 1
         self.turn = (self.turn % self.players) + 1
     
     def draw_tiles(self):
