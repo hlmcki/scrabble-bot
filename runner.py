@@ -11,11 +11,17 @@ ai = ScrabbleAI()
 count = 0
 while count < 3:
     game.print()
-    print("Turn:      Player", game.turn)
-    print("Hand:     ", game.hands[game.turn])
-    word = input("Word:      ")
-    start = (input("Start:     "))
-    direction = input("Direction: ")
+    print("Turn:          Player", game.turn)
+    print("Score:        ", str(game.scores[game.turn]), "points")
+    print("Hand:         ", game.hands[game.turn])
+    points_max = 100
+    word_max = "FOOBAR"
+    start_max = "H8"
+    direction_max = "D"
+    print("AI suggestion: " + "(" + str(points_max) + " points) " + word_max + ", " + start_max + ", " + direction_max)
+    word = input("Word:          ")
+    start = (input("Start:         "))
+    direction = input("Direction:     ")
     game.play_word(word, start, direction)
     game.draw_tiles()
     count += 1
