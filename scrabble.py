@@ -20,6 +20,23 @@ BOARD = [["TW", "  ", "  ", "DL", "  ", "  ", "  ", "TW", "  ", "  ", "  ", "DL"
          ["TW", "  ", "  ", "DL", "  ", "  ", "  ", "TW", "  ", "  ", "  ", "DL", "  ", "  ", "TW"]
         ]
 
+WORD_MULTIPLIERS =  [[3, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 3],
+                     [1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1],
+                     [1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1],
+                     [1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1],
+                     [1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1],
+                     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                     [3, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 3],
+                     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                     [1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1],
+                     [1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1],
+                     [1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1],
+                     [1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1],
+                     [3, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 3]
+                    ]
+
 LETTER_MULTIPLIERS = [[1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1],
                       [1, 1, 1, 1, 1, 3, 1, 1, 1, 3, 1, 1, 1, 1, 1],
                       [1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1],
@@ -361,21 +378,21 @@ class Scrabble():
             del(self.tiles[0:7])
 
         # Board
-        self.board = [[" _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _"],
-                      [" _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _"],
-                      [" _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _"],
-                      [" _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _"],
-                      [" _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _"],
-                      [" _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _"],
-                      [" _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _"],
-                      [" _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _"],
-                      [" _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _"],
-                      [" _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _"],
-                      [" _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _"],
-                      [" _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _"],
-                      [" _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _"],
-                      [" _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _"],
-                      [" _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _", " _"]
+        self.board = [["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+                      ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+                      ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+                      ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+                      ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+                      ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+                      ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+                      ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+                      ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+                      ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+                      ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+                      ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+                      ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+                      ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+                      ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]
                      ]
         
     def print(self):
@@ -387,7 +404,10 @@ class Scrabble():
         for i in range(15):
             row = ""
             for j in range(15):
-                row += self.board[i][j]
+                if self.board[i][j] == "":
+                    row += " _"
+                else:
+                    row += " " + self.board[i][j]
             print((" " + str(i + 1))[-2:], row)
         print("")
 
@@ -404,24 +424,33 @@ class Scrabble():
         for i in range(len(word)):
             letter = word[i]
             if direction == "A":
-                if self.board[y][x + i] == " _":
-                    self.board[y][x + i] = " " + letter
+                if self.board[y][x + i] == "":
+                    self.board[y][x + i] = letter
                     self.hands[self.turn].remove(letter)
             if direction == "D":
-                if self.board[y + i][x] == " _":
-                    self.board[y + i][x] = " " + letter
+                if self.board[y + i][x] == "":
+                    self.board[y + i][x] = letter
                     self.hands[self.turn].remove(letter)
             
         # Update scores
-        location = []
+        locations = []
         for i in range(len(word)):
-            location.append((x, y))
+            locations.append((x, y))
             if direction == "A":
                 x += 1
             if direction == "D":
                 y += 1
-
-        self.scores[self.turn] += 1
+        score = 0
+        word_multiplier = 1
+        for location in locations:
+            x = location[0]
+            y = location[1]
+            score += SCORES[self.board[y][x]] * LETTER_MULTIPLIERS[y][x]
+            if BOARD[y][x] == "DW":
+                word_multiplier = 2
+            if BOARD[y][x] == "TW":
+                word_multiplier = 3
+        self.scores[self.turn] += score * word_multiplier
         
         # Update turn
         self.turn = (self.turn % self.players) + 1
@@ -508,4 +537,87 @@ def play_first_move(tiles):
 def play_second_move(board, tiles):
     """
     Returns the word that will score the highest number of points on the first move, given the current board and a list of tiles
+    """
+
+def scan_board(board):
+    """
+    Returns two lists:
+    1. A list of all words on the board; and,
+    2. A list of tuples containing the words and the squares they occupy
+    """
+    words = []
+    locations = []
+    # Scan rows
+    for i in range(15):
+        word = ""
+        location = []
+        for j in range(15):
+            letter = board[i][j]
+            if letter == "":
+                if len(word) > 1:
+                    words.append(word)
+                    locations.append((word, location))
+                word = ""
+                location = []
+            else:
+                word += letter
+                location.append((j, i))
+    
+    # Scan columns
+    for i in range(15):
+        word = ""
+        location = []
+        for j in range(15):
+            letter = board[j][i]
+            if letter == "":
+                if len(word) > 1:
+                    words.append(word)
+                    locations.append((word, location))
+                word = ""
+                location = []
+            else:
+                word += letter
+                location.append((i, j))
+    
+    return words, locations
+
+def compare_boards(board_before, board_after):
+    """
+    Returns list of all new words on board after move played and where they are located
+    """
+    locations = []
+    words_before = scan_board(board_before)
+    locations_after = scan_board(board_after)
+
+    for i in range(len(locations_after)):
+        word = locations_after[i][0]
+
+    #for word in words_after:
+    #    if word in words_before:
+    #        words_before.remove(word)
+    #    else:
+    #        words[word] = location
+    #        words.append((word, []))
+
+    return words
+
+def score_word(word, locations):
+    """
+    Returns number of points scored for a word
+    """
+    points = 0
+    word_multiplier = 1
+    for i in range(len(word)):
+        letter = word[i]
+        x = locations[i][0]
+        y = locations[i][1]
+        points += SCORES[letter] * LETTER_MULTIPLIERS[y][x]
+        word_multiplier *= WORD_MULTIPLIERS[y][x]
+    points = points * word_multiplier
+
+    return points
+
+def score_move(board_before, board_after):
+    """
+    Returns number of points scored for a move
     """
