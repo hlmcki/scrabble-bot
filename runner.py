@@ -9,7 +9,7 @@ ai = ScrabbleAI()
 
 # Run game
 count = 0
-while count < 3:
+while count < 10:
     game.print()
     print("Turn:          Player", game.turn)
     print("Score:        ", str(game.scores[game.turn]), "points")
