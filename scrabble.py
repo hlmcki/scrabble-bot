@@ -411,14 +411,108 @@ class Scrabble():
             print((" " + str(i + 1))[-2:], row)
         print("")
 
-    def score_word(self, word, x, y, right_or_down):
-        return 1
-    
+    def scan_board(self, board):
+        """
+        Returns a of all words on the board and the squares they occupy
+        """
+        words = []
+        # Scan rows
+        for i in range(15):
+            word = ""
+            location = []
+            for j in range(15):
+                letter = board[i][j]
+                if letter == "":
+                    if len(word) > 1:
+                        words.append((word, location))
+                    word = ""
+                    location = []
+                else:
+                    word += letter
+                    location.append((j, i))
+        
+        # Scan columns
+        for i in range(15):
+            word = ""
+            location = []
+            for j in range(15):
+                letter = board[j][i]
+                if letter == "":
+                    if len(word) > 1:
+                        words.append((word, location))
+                    word = ""
+                    location = []
+                else:
+                    word += letter
+                    location.append((i, j))
+        
+        return words
+
+    def compare_boards(self, board_before, board_after):
+        """
+        Returns list of locations where tiles have been played on most recent turn
+        """
+        locations = []
+        for i in range(15):
+            for j in range(15):
+                if board_before[i][j] != board_after[i][j]:
+                    locations.append((j, i))
+        
+        return locations
+
+    def new_words(self, board_before, board_after):
+        """
+        Returns list of all new words on board after move played and where they are located
+        """
+        words = []
+        words_before = self.scan_board(board_before)
+        words_after = self.scan_board(board_after)
+
+        for word in words_after:
+            if word in words_before:
+                words_before.remove(word)
+            else:
+                words.append(word)
+
+        return words
+
+    def score_word(self, word, board_before, board_after):
+        """
+        Returns number of points scored for a word
+        """
+        points = 0
+        word_multiplier = 1
+        locations = self.compare_boards(board_before, board_after)
+        for i in range(len(word[0])):
+            letter = word[0][i]
+            x = word[1][i][0]
+            y = word[1][i][1]
+            if (x, y) in locations:
+                points += SCORES[letter] * LETTER_MULTIPLIERS[y][x]
+                word_multiplier *= WORD_MULTIPLIERS[y][x]
+            else:
+                points += SCORES[letter]
+        points = points * word_multiplier
+
+        return points
+
+    def score_move(self, board_before, board_after):
+        """
+        Returns number of points scored for a move
+        """
+        points = 0
+        words = self.new_words(board_before, board_after)
+        for word in words:
+            points += self.score_word(word, board_before, board_after)
+
+        return points
+
     def play_word(self, word, start, direction):
         """
         Plays a word on board and updates scores accordingly
         """
         # Play word on board
+        board_before = copy.deepcopy(self.board)
         x = COORDINATES[start]["x"]
         y = COORDINATES[start]["y"]
         for i in range(len(word)):
@@ -431,26 +525,32 @@ class Scrabble():
                 if self.board[y + i][x] == "":
                     self.board[y + i][x] = letter
                     self.hands[self.turn].remove(letter)
-            
+        board_after = copy.deepcopy(self.board)
+
         # Update scores
-        locations = []
-        for i in range(len(word)):
-            locations.append((x, y))
-            if direction == "A":
-                x += 1
-            if direction == "D":
-                y += 1
-        score = 0
-        word_multiplier = 1
-        for location in locations:
-            x = location[0]
-            y = location[1]
-            score += SCORES[self.board[y][x]] * LETTER_MULTIPLIERS[y][x]
-            if BOARD[y][x] == "DW":
-                word_multiplier = 2
-            if BOARD[y][x] == "TW":
-                word_multiplier = 3
-        self.scores[self.turn] += score * word_multiplier
+        self.scores[self.turn] += self.score_move(board_before, board_after)
+
+        if len(self.hands[self.turn]) == 0:
+            self.scores[self.turn] += 50
+        
+        # locations = []
+        # for i in range(len(word)):
+        #     locations.append((x, y))
+        #     if direction == "A":
+        #         x += 1
+        #     if direction == "D":
+        #         y += 1
+        # score = 0
+        # word_multiplier = 1
+        # for location in locations:
+        #     x = location[0]
+        #     y = location[1]
+        #     score += SCORES[self.board[y][x]] * LETTER_MULTIPLIERS[y][x]
+        #     if BOARD[y][x] == "DW":
+        #         word_multiplier = 2
+        #     if BOARD[y][x] == "TW":
+        #         word_multiplier = 3
+        # self.scores[self.turn] += score * word_multiplier
         
         # Update turn
         self.turn = (self.turn % self.players) + 1
@@ -504,7 +604,7 @@ def possible_words(tiles):
                     break
     return words
 
-def move_score(board_before, board_after):
+
     """
     Returns the number of points scored for a move, given the board before and after the move was played
     """
@@ -534,90 +634,7 @@ def play_first_move(tiles):
     
     return max_word, max_score
 
-def play_second_move(board, tiles):
+
     """
     Returns the word that will score the highest number of points on the first move, given the current board and a list of tiles
-    """
-
-def scan_board(board):
-    """
-    Returns two lists:
-    1. A list of all words on the board; and,
-    2. A list of tuples containing the words and the squares they occupy
-    """
-    words = []
-    locations = []
-    # Scan rows
-    for i in range(15):
-        word = ""
-        location = []
-        for j in range(15):
-            letter = board[i][j]
-            if letter == "":
-                if len(word) > 1:
-                    words.append(word)
-                    locations.append((word, location))
-                word = ""
-                location = []
-            else:
-                word += letter
-                location.append((j, i))
-    
-    # Scan columns
-    for i in range(15):
-        word = ""
-        location = []
-        for j in range(15):
-            letter = board[j][i]
-            if letter == "":
-                if len(word) > 1:
-                    words.append(word)
-                    locations.append((word, location))
-                word = ""
-                location = []
-            else:
-                word += letter
-                location.append((i, j))
-    
-    return words, locations
-
-def compare_boards(board_before, board_after):
-    """
-    Returns list of all new words on board after move played and where they are located
-    """
-    locations = []
-    words_before = scan_board(board_before)
-    locations_after = scan_board(board_after)
-
-    for i in range(len(locations_after)):
-        word = locations_after[i][0]
-
-    #for word in words_after:
-    #    if word in words_before:
-    #        words_before.remove(word)
-    #    else:
-    #        words[word] = location
-    #        words.append((word, []))
-
-    return words
-
-def score_word(word, locations):
-    """
-    Returns number of points scored for a word
-    """
-    points = 0
-    word_multiplier = 1
-    for i in range(len(word)):
-        letter = word[i]
-        x = locations[i][0]
-        y = locations[i][1]
-        points += SCORES[letter] * LETTER_MULTIPLIERS[y][x]
-        word_multiplier *= WORD_MULTIPLIERS[y][x]
-    points = points * word_multiplier
-
-    return points
-
-def score_move(board_before, board_after):
-    """
-    Returns number of points scored for a move
     """
