@@ -604,22 +604,21 @@ def possible_words(tiles):
                     break
     return words
 
-
-    """
-    Returns the number of points scored for a move, given the board before and after the move was played
-    """
-
 def play_first_move(tiles):
     """
     Returns the word that will score the highest number of points on the first move, given a list of tiles
     """
     words = possible_words(tiles)
     max_score = 0
+    # Starting square
     for i in range(1, 8):
-        for j in range(max(1, 8 - i), 8):
+        # Word length
+        for j in range(max(2, 8 - i), 8):
+            # For each word of length, j, in the dictionary
             for word in words[j]:
                 score = 0
                 tiles_remaining = copy.deepcopy(tiles)
+                # For each letter in the word
                 for k in range(len(word)):
                     letter = word[k]
                     if letter in tiles_remaining:
@@ -634,7 +633,109 @@ def play_first_move(tiles):
     
     return max_word, max_score
 
+def play_second_move(board, tiles):
+    """
+    Returns the word that will score the highest number of points on the second move, given the board and a list of tiles
+    """
+    # for i in range(15):
+    #     for j in range(15):
+    #         if board[i][j] != "":
+    #             for x in range(0, j):
+    #                 for k in range(, 8)
 
+def possible_moves(location, board, tiles):
     """
-    Returns the word that will score the highest number of points on the first move, given the current board and a list of tiles
+    Given a location on the board and list of tiles, returns all moves that can be played
+    """  
+    moves = []
+    x = location[0]
+    y = location[1]
+    limits = playable_squares(location, board)
+    xL = limits["L"][0]
+    xR = limits["R"][0]
+    yU = limits["U"][1]
+    yD = limits["D"][1]
+
+    # Horizontally
+    # Starting square
+    # for i in range(xL, x + 1):
+    #     # Word length
+    #     for j in range(max(2, x - i + 1), 16 - i):
+    #        # For each word of length, j, in the dictionary
+    #         for word in words[j]:
+
+    return moves
+
+def playable_squares(location, board):
     """
+    Given a location on the board, returns a dictionary containing the furthest square in each direction that could possibly be reached with a move
+    """
+    limits = dict()
+    x = location[0]
+    y = location[1]
+    
+    # Horizontally
+    if x == 7:
+        limits["L"] = (0, y)
+        limits["R"] = (14, y)
+    if x < 7:
+        limits["L"] = (0, y)
+        i, n = x + 1, 0
+        while n < 8 and i <= 14:
+            if board[y][i] == "":
+                n += 1
+            i += 1
+        limits["R"] = (i - 2, y)
+    if x > 7:
+        limits["R"] = (14, y)
+        i, n = x - 1, 0
+        while n < 8 and i >= 0:
+            if board[y][i] == "":
+                n += 1
+            i -= 1
+        limits["L"] = (i + 2, y)
+    
+    # Vertically
+    if y == 7:
+        limits["U"] = (x, 0)
+        limits["D"] = (x, 14)
+    if y < 7:
+        limits["U"] = (x, 0)
+        i, n = y + 1, 0
+        while n < 8 and i <= 14:
+            if board[i][x] == "":
+                n += 1
+            i += 1
+        limits["D"] = (x, i - 2)
+    if y > 7:
+        limits["D"] = (x, 14)
+        i, n = y - 1, 0
+        while n < 8 and i >= 0:
+            if board[i][y] == "":
+                n += 1
+            i -= 1
+        limits["U"] = (x, i + 2)
+
+    return limits
+
+def is_valid_move(board, word, location, direction):
+    """
+    Returns True if word can be played on board from starting square in given direction, otherwise returns False
+    """
+    x = location[0]
+    y = location[1]
+
+    # Check if word in dictionary
+    if word not in DICTIONARY:
+        return False
+    
+    # Check if there is enough space to play word on board from starting square in given direction
+    if direction == "A":
+        if x + len(word) > 15:
+            return False
+    if direction == "D":
+        if y + len(word) > 15:
+            return False
+    
+    # Check if word will fit with existing letters on the board
+    
