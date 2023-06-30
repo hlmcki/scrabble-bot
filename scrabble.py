@@ -413,7 +413,7 @@ class Scrabble():
 
     def scan_board(self, board):
         """
-        Returns a of all words on the board and the squares they occupy
+        Returns a list of all words on the board and the squares they occupy
         """
         words = []
         # Scan rows
@@ -564,6 +564,138 @@ class Scrabble():
             self.hands[self.turn].append(tile)
         del(self.tiles[0:draw])
 
+    def is_valid_move(self, board, word, location, direction):
+        """
+        Returns True if word can be played on board from starting square in given direction, otherwise returns False
+        """
+        x = location[0]
+        y = location[1]
+
+        # Check if word in dictionary
+        if word not in DICTIONARY:
+            return False
+        
+        # Check if there is enough space to play word on board from starting square in given direction
+        if direction == "A":
+            if x + len(word) > 15:
+                return False
+        if direction == "D":
+            if y + len(word) > 15:
+                return False
+        
+        # Check if word will fit with existing letters on the board
+        if direction == "A":
+            for i in range(len(word)):
+                letter = word[i]
+                if board[y][x + i] != "" and board[y][x + i] != letter:
+                    return False
+        if direction == "D":
+            for i in range(len(word)):
+                letter = word[i]
+                if board[y + i][x] != "" and board[y + i][x] != letter:
+                    return False
+
+        # Check if playing word will result in any invalid words
+
+        # Play word on board
+        board_after = copy.deepcopy(board)
+        for i in range(len(word)):
+            letter = word[i]
+            if direction == "A":
+                if board_after[y][x + i] == "":
+                    board_after[y][x + i] = letter
+            if direction == "D":
+                if board_after[y + i][x] == "":
+                    board_after[y + i][x] = letter
+        
+        words = self.scan_board(board_after)
+        
+        for word in words:
+            if word[0] not in DICTIONARY:
+                return False
+        
+        return True
+
+    def playable_squares(self, location, board):
+        """
+        Given a location on the board, returns a dictionary containing the furthest square in each direction that could possibly be reached with a move
+        """
+        limits = dict()
+        x = location[0]
+        y = location[1]
+        
+        # Horizontally
+        if x == 7:
+            limits["L"] = (0, y)
+            limits["R"] = (14, y)
+        if x < 7:
+            limits["L"] = (0, y)
+            i, n = x + 1, 0
+            while n < 8 and i <= 14:
+                if board[y][i] == "":
+                    n += 1
+                i += 1
+            limits["R"] = (i - 2, y)
+        if x > 7:
+            limits["R"] = (14, y)
+            i, n = x - 1, 0
+            while n < 8 and i >= 0:
+                if board[y][i] == "":
+                    n += 1
+                i -= 1
+            limits["L"] = (i + 2, y)
+        
+        # Vertically
+        if y == 7:
+            limits["U"] = (x, 0)
+            limits["D"] = (x, 14)
+        if y < 7:
+            limits["U"] = (x, 0)
+            i, n = y + 1, 0
+            while n < 8 and i <= 14:
+                if board[i][x] == "":
+                    n += 1
+                i += 1
+            limits["D"] = (x, i - 2)
+        if y > 7:
+            limits["D"] = (x, 14)
+            i, n = y - 1, 0
+            while n < 8 and i >= 0:
+                if board[i][y] == "":
+                    n += 1
+                i -= 1
+            limits["U"] = (x, i + 2)
+
+        return limits
+
+    def possible_moves(self, location, board, tiles):
+        """
+        Given a location on the board and list of tiles, returns all moves that can be played
+        """  
+        moves = []
+        x = location[0]
+        y = location[1]
+        limits = self.playable_squares(location, board)
+        xL = limits["L"][0]
+        xR = limits["R"][0]
+        yU = limits["U"][1]
+        yD = limits["D"][1]
+        words = {1:[], 2:[], 3:[], 4:[], 5:[], 6:[], 7:[], 8:[], 9:[], 10:[], 11:[], 12:[], 13:[], 14:[], 15:[]}
+        for word in DICTIONARY:
+            words[len(word)].append(word)
+
+        # Horizontally
+        # Starting square
+        for i in range(xL, x + 1):
+            # Word length
+            for j in range(max(2, x - i + 1), 16 - i):
+            # For each word of length, j, in the dictionary
+                for word in words[j]:
+                    if self.is_valid_move(board, word, location, "A"):
+                        print(word)
+        
+        return moves
+
 class ScrabbleAI():
     """
     Scrabble game player
@@ -643,99 +775,44 @@ def play_second_move(board, tiles):
     #             for x in range(0, j):
     #                 for k in range(, 8)
 
-def possible_moves(location, board, tiles):
+def possible_moves(row, tiles):
     """
-    Given a location on the board and list of tiles, returns all moves that can be played
-    """  
+    """
     moves = []
-    x = location[0]
-    y = location[1]
-    limits = playable_squares(location, board)
-    xL = limits["L"][0]
-    xR = limits["R"][0]
-    yU = limits["U"][1]
-    yD = limits["D"][1]
-
-    # Horizontally
-    # Starting square
-    # for i in range(xL, x + 1):
-    #     # Word length
-    #     for j in range(max(2, x - i + 1), 16 - i):
-    #        # For each word of length, j, in the dictionary
-    #         for word in words[j]:
-
-    return moves
-
-def playable_squares(location, board):
     """
-    Given a location on the board, returns a dictionary containing the furthest square in each direction that could possibly be reached with a move
-    """
-    limits = dict()
-    x = location[0]
-    y = location[1]
-    
-    # Horizontally
-    if x == 7:
-        limits["L"] = (0, y)
-        limits["R"] = (14, y)
-    if x < 7:
-        limits["L"] = (0, y)
-        i, n = x + 1, 0
-        while n < 8 and i <= 14:
-            if board[y][i] == "":
-                n += 1
-            i += 1
-        limits["R"] = (i - 2, y)
-    if x > 7:
-        limits["R"] = (14, y)
-        i, n = x - 1, 0
-        while n < 8 and i >= 0:
-            if board[y][i] == "":
-                n += 1
-            i -= 1
-        limits["L"] = (i + 2, y)
-    
-    # Vertically
-    if y == 7:
-        limits["U"] = (x, 0)
-        limits["D"] = (x, 14)
-    if y < 7:
-        limits["U"] = (x, 0)
-        i, n = y + 1, 0
-        while n < 8 and i <= 14:
-            if board[i][x] == "":
-                n += 1
-            i += 1
-        limits["D"] = (x, i - 2)
-    if y > 7:
-        limits["D"] = (x, 14)
-        i, n = y - 1, 0
-        while n < 8 and i >= 0:
-            if board[i][y] == "":
-                n += 1
-            i -= 1
-        limits["U"] = (x, i + 2)
+    00: Not allowed
+    01: Words of length 03 fitting the pattern, "O H _"
+        Words of length 05 fitting the pattern, "O H _ _ I"
+        Words of length 06 fitting the pattern, "O H _ _ I _"
+        Words of length 11 fitting the pattern, "O H _ _ I _ _ H E L L"
+        Words of length 12 fitting the pattern, "O H _ _ I _ _ H E L L _"
+        Words of length 13 fitting the pattern, "O H _ _ I _ _ H E L L _ _"
+        Words of length 14 fitting the pattern, "O H _ _ I _ _ H E L L _ _ _"
+        
+        Words of length 02 fitting the pattern, "_ I"
+        Words of length 03 fitting the pattern, "_ I _"
+        Words of length 07 fitting the pattern, "I _ _ H E L L"
+        Words of length 08 fitting the pattern, "I _ _ H E L L _"
+        Words of length 09 fitting the pattern, "I _ _ H E L L _ _"
+        Words of length 10 fitting the pattern, "I _ _ H E L L _ _ _"
+        Words of length 11 fitting the pattern, "I _ _ H E L L _ _ _ _"
+        Words of length 08 fitting the pattern, "_ I _ _ _ H E L L"
 
-    return limits
-
-def is_valid_move(board, word, location, direction):
+        Words of length 02 fitting the pattern, "I _"
+        Words of length 05 fitting the pattern, "
+    02:
+    03:
+    04:
+    05:
+    06:
+    07:
+    
+    08:
+    09:
+    10:
+    11:
+    12:
+    13:
+    14:
+    15: Words of length 15 fitting the pattern, "O H _ _ I _ _ H E L L O _ _ _"
     """
-    Returns True if word can be played on board from starting square in given direction, otherwise returns False
-    """
-    x = location[0]
-    y = location[1]
-
-    # Check if word in dictionary
-    if word not in DICTIONARY:
-        return False
-    
-    # Check if there is enough space to play word on board from starting square in given direction
-    if direction == "A":
-        if x + len(word) > 15:
-            return False
-    if direction == "D":
-        if y + len(word) > 15:
-            return False
-    
-    # Check if word will fit with existing letters on the board
-    
