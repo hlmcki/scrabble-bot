@@ -778,10 +778,29 @@ def play_second_move(board, tiles):
 def possible_moves(row, tiles):
     """
     """
-    moves = []
+    patterns = []
+    i = 0
+    while i < 15:
+        n = 0
+        if row[i] == "":
+            n += 1
+        if i == 0 or row[i - 1] == "":
+            j = i + 1
+            while j < 15:
+                if row[j] == "":
+                    n += 1
+                if n in range(1, 8):
+                    if j == 14:
+                        patterns.append(row[i:j + 1])
+                    else:
+                        if row[j + 1] == "":
+                            patterns.append(row[i:j + 1])
+                j += 1
+        i += 1
     """
-    00: Not allowed
-    01: Words of length 03 fitting the pattern, "O H _"
+        O H _ _ I _ _ H E L L _ _ _ _
+        
+        Words of length 03 fitting the pattern, "O H _"
         Words of length 05 fitting the pattern, "O H _ _ I"
         Words of length 06 fitting the pattern, "O H _ _ I _"
         Words of length 11 fitting the pattern, "O H _ _ I _ _ H E L L"
@@ -791,28 +810,34 @@ def possible_moves(row, tiles):
         
         Words of length 02 fitting the pattern, "_ I"
         Words of length 03 fitting the pattern, "_ I _"
+        Words of length 08 fitting the pattern, "_ I _ _ H E L L"
+        Words of length 09 fitting the pattern, "_ I _ _ H E L L _"
+        Words of length 10 fitting the pattern, "_ I _ _ H E L L _ _"
+        Words of length 11 fitting the pattern, "_ I _ _ H E L L _ _ _"
+        Words of length 12 fitting the pattern, "_ I _ _ H E L L _ _ _ _"
+
+        Words of length 02 fitting the pattern, "I _"
         Words of length 07 fitting the pattern, "I _ _ H E L L"
         Words of length 08 fitting the pattern, "I _ _ H E L L _"
         Words of length 09 fitting the pattern, "I _ _ H E L L _ _"
         Words of length 10 fitting the pattern, "I _ _ H E L L _ _ _"
         Words of length 11 fitting the pattern, "I _ _ H E L L _ _ _ _"
-        Words of length 08 fitting the pattern, "_ I _ _ _ H E L L"
 
-        Words of length 02 fitting the pattern, "I _"
-        Words of length 05 fitting the pattern, "
-    02:
-    03:
-    04:
-    05:
-    06:
-    07:
-    
-    08:
-    09:
-    10:
-    11:
-    12:
-    13:
-    14:
-    15: Words of length 15 fitting the pattern, "O H _ _ I _ _ H E L L O _ _ _"
+        Words of length 05 fitting the pattern, "_ H E L L"
+        Words of length 06 fitting the pattern, "_ H E L L _"
+        Words of length 07 fitting the pattern, "_ H E L L _ _"
+        Words of length 08 fitting the pattern, "_ H E L L _ _ _"
+        Words of length 09 fitting the pattern, "_ H E L L _ _ _ _"
+
+        Words of length 05 fitting the pattern, "H E L L _"
+        Words of length 06 fitting the pattern, "H E L L _ _"
+        Words of length 07 fitting the pattern, "H E L L _ _ _"
+        Words of length 08 fitting the pattern, "H E L L _ _ _ _"
+
+        Words of length 02 fitting the pattern, "_ _"
+        Words of length 03 fitting the pattern, "_ _ _"
+
+        Words of length 02 fitting the pattern, "_ _"
+        Words of length 03 fitting the pattern, "_ _ _"
     """
+    return patterns
