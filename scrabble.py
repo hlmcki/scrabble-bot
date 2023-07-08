@@ -705,6 +705,24 @@ class ScrabbleAI():
         # Number of players
         self.players = players
 
+class Move():
+    """
+    """
+    def __init__(self, word, start, direction):
+
+        self.word = word
+        self.start = start
+        self.direction = direction
+
+class Pattern():
+    """
+    """
+    def __init__(self, pattern, start, direction):
+
+        self.pattern = pattern
+        self.start = start
+        self.direction = direction
+
 def is_word(word):
     """
     Returns True if word in dictionary, otherwise returns False
@@ -775,7 +793,7 @@ def play_second_move(board, tiles):
     #             for x in range(0, j):
     #                 for k in range(, 8)
 
-def possible_moves(row, tiles):
+def possible_moves_row(row, row_index, tiles, direction):
     """
     """
     patterns = []
@@ -791,53 +809,72 @@ def possible_moves(row, tiles):
                     n += 1
                 if n in range(1, 8):
                     if j == 14:
-                        patterns.append(row[i:j + 1])
+                        if direction == "A":
+                            patterns.append([row[i:j + 1], (row_index, i), "A"])
+                        if direction == "D":
+                            patterns.append([row[i:j + 1], (i, row_index), "D"])
                     else:
                         if row[j + 1] == "":
-                            patterns.append(row[i:j + 1])
+                            if direction == "A":
+                                patterns.append([row[i:j + 1], (row_index, i), "A"])
+                            if direction == "D":
+                                patterns.append([row[i:j + 1], (i, row_index), "D"])
                 j += 1
         i += 1
+    
+    moves = []
+    for i in range(len(patterns)):
+        pattern = patterns[i][0]
+        location = patterns[i][1]
+        direction = patterns[i][2]
+        for word in DICTIONARY:
+            if pattern_match(word, pattern, tiles):
+                moves.append([word, location, direction])
+
+    return moves
+
+def pattern_match(word, pattern, tiles):
     """
-        O H _ _ I _ _ H E L L _ _ _ _
-        
-        Words of length 03 fitting the pattern, "O H _"
-        Words of length 05 fitting the pattern, "O H _ _ I"
-        Words of length 06 fitting the pattern, "O H _ _ I _"
-        Words of length 11 fitting the pattern, "O H _ _ I _ _ H E L L"
-        Words of length 12 fitting the pattern, "O H _ _ I _ _ H E L L _"
-        Words of length 13 fitting the pattern, "O H _ _ I _ _ H E L L _ _"
-        Words of length 14 fitting the pattern, "O H _ _ I _ _ H E L L _ _ _"
-        
-        Words of length 02 fitting the pattern, "_ I"
-        Words of length 03 fitting the pattern, "_ I _"
-        Words of length 08 fitting the pattern, "_ I _ _ H E L L"
-        Words of length 09 fitting the pattern, "_ I _ _ H E L L _"
-        Words of length 10 fitting the pattern, "_ I _ _ H E L L _ _"
-        Words of length 11 fitting the pattern, "_ I _ _ H E L L _ _ _"
-        Words of length 12 fitting the pattern, "_ I _ _ H E L L _ _ _ _"
-
-        Words of length 02 fitting the pattern, "I _"
-        Words of length 07 fitting the pattern, "I _ _ H E L L"
-        Words of length 08 fitting the pattern, "I _ _ H E L L _"
-        Words of length 09 fitting the pattern, "I _ _ H E L L _ _"
-        Words of length 10 fitting the pattern, "I _ _ H E L L _ _ _"
-        Words of length 11 fitting the pattern, "I _ _ H E L L _ _ _ _"
-
-        Words of length 05 fitting the pattern, "_ H E L L"
-        Words of length 06 fitting the pattern, "_ H E L L _"
-        Words of length 07 fitting the pattern, "_ H E L L _ _"
-        Words of length 08 fitting the pattern, "_ H E L L _ _ _"
-        Words of length 09 fitting the pattern, "_ H E L L _ _ _ _"
-
-        Words of length 05 fitting the pattern, "H E L L _"
-        Words of length 06 fitting the pattern, "H E L L _ _"
-        Words of length 07 fitting the pattern, "H E L L _ _ _"
-        Words of length 08 fitting the pattern, "H E L L _ _ _ _"
-
-        Words of length 02 fitting the pattern, "_ _"
-        Words of length 03 fitting the pattern, "_ _ _"
-
-        Words of length 02 fitting the pattern, "_ _"
-        Words of length 03 fitting the pattern, "_ _ _"
     """
-    return patterns
+    if len(word) != len(pattern):
+        return False
+
+    tiles_remaining = copy.deepcopy(tiles)
+    for i in range(len(word)):
+        if word[i] != pattern[i]:
+            if pattern[i] == "":
+                if word[i] in tiles_remaining:
+                    tiles_remaining.remove(word[i])
+                else:
+                    return False
+            else:
+                return False
+
+    return True
+
+def possible_moves(board, tiles):
+    """
+    """
+    moves = []
+    
+    # Horizontally
+    for i in range(15):
+        moves.append(possible_moves_row(board[i][:], i, tiles, "A"))
+
+    # Vertically
+    for i in range(15):
+        moves.append(possible_moves_row([row[i] for row in board], i, tiles, "D"))
+
+    return moves
+
+def max_move(board, tiles):
+    """
+    Given board and list of tiles, returns move that will score maximum number of points
+    """
+    moves = possible_moves(board, tiles)
+    points = 0
+    for move in moves:
+        if score_move(move) > points:
+            max_move = move 
+
+    return move
