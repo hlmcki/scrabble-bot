@@ -822,6 +822,19 @@ def possible_moves_row(row, row_index, tiles, direction):
                 j += 1
         i += 1
     
+    patterns_copy = []
+    for i in range(len(patterns)):
+        pattern = patterns[i][0]
+        tmp = False
+        for char in pattern:
+            if char != "":
+                tmp = True
+                break
+        if tmp == True:
+            patterns_copy.append(patterns[i])
+
+    patterns = patterns_copy
+
     moves = []
     for i in range(len(patterns)):
         pattern = patterns[i][0]
@@ -832,6 +845,8 @@ def possible_moves_row(row, row_index, tiles, direction):
                 moves.append([word, location, direction])
 
     return moves
+
+    return patterns
 
 def pattern_match(word, pattern, tiles):
     """
@@ -859,13 +874,130 @@ def possible_moves(board, tiles):
     
     # Horizontally
     for i in range(15):
-        moves.append(possible_moves_row(board[i][:], i, tiles, "A"))
+        moves_row = possible_moves_row(board[i][:], i, tiles, "A")
+        for move in moves_row:
+            moves.append(move)
 
     # Vertically
     for i in range(15):
-        moves.append(possible_moves_row([row[i] for row in board], i, tiles, "D"))
+        moves_column = possible_moves_row([row[i] for row in board], i, tiles, "D")
+        for move in moves_column:
+            moves.append(move)
 
     return moves
+
+def scan_board(board):
+    """
+    Returns a list of all words on the board and the squares they occupy
+    """
+    words = []
+    # Scan rows
+    for i in range(15):
+        word = ""
+        location = []
+        for j in range(15):
+            letter = board[i][j]
+            if letter == "":
+                if len(word) > 1:
+                    words.append((word, location))
+                word = ""
+                location = []
+            else:
+                word += letter
+                location.append((j, i))
+    
+    # Scan columns
+    for i in range(15):
+        word = ""
+        location = []
+        for j in range(15):
+            letter = board[j][i]
+            if letter == "":
+                if len(word) > 1:
+                    words.append((word, location))
+                word = ""
+                location = []
+            else:
+                word += letter
+                location.append((i, j))
+    
+    return words
+
+def compare_boards(board_before, board_after):
+    """
+    Returns list of locations where tiles have been played on most recent turn
+    """
+    locations = []
+    for i in range(15):
+        for j in range(15):
+            if board_before[i][j] != board_after[i][j]:
+                locations.append((j, i))
+    
+    return locations
+
+def new_words(board_before, board_after):
+    """
+    Returns list of all new words on board after move played and where they are located
+    """
+    words = []
+    words_before = scan_board(board_before)
+    words_after = scan_board(board_after)
+
+    for word in words_after:
+        if word in words_before:
+            words_before.remove(word)
+        else:
+            words.append(word)
+
+    return words
+
+def score_word(word, board_before, board_after):
+    """
+    Returns number of points scored for a word
+    """
+    points = 0
+    word_multiplier = 1
+    locations = compare_boards(board_before, board_after)
+    for i in range(len(word[0])):
+        letter = word[0][i]
+        x = word[1][i][0]
+        y = word[1][i][1]
+        if (x, y) in locations:
+            points += SCORES[letter] * LETTER_MULTIPLIERS[y][x]
+            word_multiplier *= WORD_MULTIPLIERS[y][x]
+        else:
+            points += SCORES[letter]
+    points = points * word_multiplier
+
+    return points
+
+def score_move(board_before, board_after):
+    """
+    Returns number of points scored for a move
+    """
+    points = 0
+    words = new_words(board_before, board_after)
+    for word in words:
+        points += score_word(word, board_before, board_after)
+
+    return points
+
+def play_word(board, word, start, direction):
+    """
+    Plays a word on board
+    """
+    board_after = copy.deepcopy(board)
+    # Play word on board
+    x = start[1]
+    y = start[0]
+    for i in range(len(word)):
+        letter = word[i]
+        if direction == "A":
+            board_after[y][x + i] = letter
+        if direction == "D":
+            board_after[y + i][x] = letter
+
+    return board_after
 
 def max_move(board, tiles):
     """
@@ -873,8 +1005,14 @@ def max_move(board, tiles):
     """
     moves = possible_moves(board, tiles)
     points = 0
-    for move in moves:
-        if score_move(move) > points:
-            max_move = move 
+    max_move = []
+    for i in range(len(moves)):
+        word = moves[i][0]
+        start = moves[i][1]
+        direction = moves[i][2]
+        score = score_move(board, play_word(board, word, start, direction))
+        if score > points:
+            max_move = moves[i]
+            points = score_move(board, play_word(board, word, start, direction)) 
 
-    return move
+    return max_move, points

@@ -3,9 +3,8 @@ from scrabble import *
 # Prompt user for number of players
 players = int(input("Number of players: "))
 
-# Create game and AI agent
+# Create game
 game = Scrabble(players=players)
-ai = ScrabbleAI()
 
 # Run game
 count = 0
