@@ -1,5 +1,3 @@
-# TO-DO: Remove hard-coding of 15 as maximum word length from possible_words function
-
 import copy
 import random
 
@@ -401,368 +399,6 @@ class Scrabble():
             if direction == "A":
                 self.board[D][A + i] = letter
 
-class Scrabble_old():
-    """
-    Scrabble game representation
-    """
-    def __init__(self, players=2):
-
-        # Number of players
-        self.players = players
-
-        # Scores for each player
-        self.scores = {}
-        for i in range(players):
-            self.scores[i + 1] = 0
-
-        # Turn
-        self.turn = 1
-
-        # Tiles
-        self.tiles = [" ", " ", "A", "A", "A", "A", "A", "A", "A", "A", "A", "B", "B", "C", "C",
-                      "D", "D", "D", "D", "E", "E", "E", "E", "E", "E", "E", "E", "E", "E", "E",
-                      "E", "F", "F", "G", "G", "G", "H", "H", "I", "I", "I", "I", "I", "I", "I",
-                      "I", "I", "J", "K", "L", "L", "L", "L", "M", "M", "N", "N", "N", "N", "N",
-                      "N", "O", "O", "O", "O", "O", "O", "O", "O", "P", "P", "Q", "R", "R", "R",
-                      "R", "R", "R", "S", "S", "S", "S", "T", "T", "T", "T", "T", "T", "U", "U",
-                      "U", "U", "V", "V", "W", "W", "X", "Y", "Y", "Z"
-                     ]
-        random.shuffle(self.tiles)
-
-        # Give seven tiles to each player
-        self.hands = {}
-        for i in range(players):
-            self.hands[i + 1] = self.tiles[0:7]
-            del(self.tiles[0:7])
-
-        # Board
-        self.board = [["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-                      ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-                      ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-                      ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-                      ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-                      ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-                      ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-                      ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-                      ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-                      ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-                      ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-                      ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-                      ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-                      ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-                      ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]
-                     ]
-        
-    def print(self):
-        """
-        Prints current board in user-friendly format
-        """
-        print("\nBoard:")
-        print("\n    A B C D E F G H I J K L M N O")
-        for i in range(15):
-            row = ""
-            for j in range(15):
-                if self.board[i][j] == "":
-                    row += " _"
-                else:
-                    row += " " + self.board[i][j]
-            print((" " + str(i + 1))[-2:], row)
-        print("")
-
-    def scan_board(self, board):
-        """
-        Returns a list of all words on the board and the squares they occupy
-        """
-        words = []
-        # Scan rows
-        for i in range(15):
-            word = ""
-            location = []
-            for j in range(15):
-                letter = board[i][j]
-                if letter == "":
-                    if len(word) > 1:
-                        words.append((word, location))
-                    word = ""
-                    location = []
-                else:
-                    word += letter
-                    location.append((j, i))
-        
-        # Scan columns
-        for i in range(15):
-            word = ""
-            location = []
-            for j in range(15):
-                letter = board[j][i]
-                if letter == "":
-                    if len(word) > 1:
-                        words.append((word, location))
-                    word = ""
-                    location = []
-                else:
-                    word += letter
-                    location.append((i, j))
-        
-        return words
-
-    def compare_boards(self, board_before, board_after):
-        """
-        Returns list of locations where tiles have been played on most recent turn
-        """
-        locations = []
-        for i in range(15):
-            for j in range(15):
-                if board_before[i][j] != board_after[i][j]:
-                    locations.append((j, i))
-        
-        return locations
-
-    def new_words(self, board_before, board_after):
-        """
-        Returns list of all new words on board after move played and where they are located
-        """
-        words = []
-        words_before = self.scan_board(board_before)
-        words_after = self.scan_board(board_after)
-
-        for word in words_after:
-            if word in words_before:
-                words_before.remove(word)
-            else:
-                words.append(word)
-
-        return words
-
-    def score_word(self, word, board_before, board_after):
-        """
-        Returns number of points scored for a word
-        """
-        points = 0
-        word_multiplier = 1
-        locations = self.compare_boards(board_before, board_after)
-        for i in range(len(word[0])):
-            letter = word[0][i]
-            x = word[1][i][0]
-            y = word[1][i][1]
-            if (x, y) in locations:
-                points += SCORES[letter] * LETTER_MULTIPLIERS[y][x]
-                word_multiplier *= WORD_MULTIPLIERS[y][x]
-            else:
-                points += SCORES[letter]
-        points = points * word_multiplier
-
-        return points
-
-    def score_move(self, board_before, board_after):
-        """
-        Returns number of points scored for a move
-        """
-        points = 0
-        words = self.new_words(board_before, board_after)
-        for word in words:
-            points += self.score_word(word, board_before, board_after)
-
-        return points
-
-    def play_word(self, word, start, direction):
-        """
-        Plays a word on board and updates scores accordingly
-        """
-        # Play word on board
-        board_before = copy.deepcopy(self.board)
-        x = COORDINATES[start]["A"]
-        y = COORDINATES[start]["D"]
-        for i in range(len(word)):
-            letter = word[i]
-            if direction == "A":
-                if self.board[y][x + i] == "":
-                    self.board[y][x + i] = letter
-                    self.hands[self.turn].remove(letter)
-            if direction == "D":
-                if self.board[y + i][x] == "":
-                    self.board[y + i][x] = letter
-                    self.hands[self.turn].remove(letter)
-        board_after = copy.deepcopy(self.board)
-
-        # Update scores
-        self.scores[self.turn] += self.score_move(board_before, board_after)
-
-        if len(self.hands[self.turn]) == 0:
-            self.scores[self.turn] += 50
-        
-        # locations = []
-        # for i in range(len(word)):
-        #     locations.append((x, y))
-        #     if direction == "A":
-        #         x += 1
-        #     if direction == "D":
-        #         y += 1
-        # score = 0
-        # word_multiplier = 1
-        # for location in locations:
-        #     x = location[0]
-        #     y = location[1]
-        #     score += SCORES[self.board[y][x]] * LETTER_MULTIPLIERS[y][x]
-        #     if BOARD[y][x] == "DW":
-        #         word_multiplier = 2
-        #     if BOARD[y][x] == "TW":
-        #         word_multiplier = 3
-        # self.scores[self.turn] += score * word_multiplier
-        
-        # Update turn
-        self.turn = (self.turn % self.players) + 1
-    
-    def draw_tiles(self):
-        """
-        Draws tiles to the current player's hand
-        """
-        draw = 7 - len(self.hands[self.turn])
-        for tile in self.tiles[0:draw]:
-            self.hands[self.turn].append(tile)
-        del(self.tiles[0:draw])
-
-    def is_valid_move(self, board, word, location, direction):
-        """
-        Returns True if word can be played on board from starting square in given direction, otherwise returns False
-        """
-        x = location[0]
-        y = location[1]
-
-        # Check if word in dictionary
-        if word not in DICTIONARY:
-            return False
-        
-        # Check if there is enough space to play word on board from starting square in given direction
-        if direction == "A":
-            if x + len(word) > 15:
-                return False
-        if direction == "D":
-            if y + len(word) > 15:
-                return False
-        
-        # Check if word will fit with existing letters on the board
-        if direction == "A":
-            for i in range(len(word)):
-                letter = word[i]
-                if board[y][x + i] != "" and board[y][x + i] != letter:
-                    return False
-        if direction == "D":
-            for i in range(len(word)):
-                letter = word[i]
-                if board[y + i][x] != "" and board[y + i][x] != letter:
-                    return False
-
-        # Check if playing word will result in any invalid words
-
-        # Play word on board
-        board_after = copy.deepcopy(board)
-        for i in range(len(word)):
-            letter = word[i]
-            if direction == "A":
-                if board_after[y][x + i] == "":
-                    board_after[y][x + i] = letter
-            if direction == "D":
-                if board_after[y + i][x] == "":
-                    board_after[y + i][x] = letter
-        
-        words = self.scan_board(board_after)
-        
-        for word in words:
-            if word[0] not in DICTIONARY:
-                return False
-        
-        return True
-
-    def playable_squares(self, location, board):
-        """
-        Given a location on the board, returns a dictionary containing the furthest square in each direction that could possibly be reached with a move
-        """
-        limits = dict()
-        x = location[0]
-        y = location[1]
-        
-        # Horizontally
-        if x == 7:
-            limits["L"] = (0, y)
-            limits["R"] = (14, y)
-        if x < 7:
-            limits["L"] = (0, y)
-            i, n = x + 1, 0
-            while n < 8 and i <= 14:
-                if board[y][i] == "":
-                    n += 1
-                i += 1
-            limits["R"] = (i - 2, y)
-        if x > 7:
-            limits["R"] = (14, y)
-            i, n = x - 1, 0
-            while n < 8 and i >= 0:
-                if board[y][i] == "":
-                    n += 1
-                i -= 1
-            limits["L"] = (i + 2, y)
-        
-        # Vertically
-        if y == 7:
-            limits["U"] = (x, 0)
-            limits["D"] = (x, 14)
-        if y < 7:
-            limits["U"] = (x, 0)
-            i, n = y + 1, 0
-            while n < 8 and i <= 14:
-                if board[i][x] == "":
-                    n += 1
-                i += 1
-            limits["D"] = (x, i - 2)
-        if y > 7:
-            limits["D"] = (x, 14)
-            i, n = y - 1, 0
-            while n < 8 and i >= 0:
-                if board[i][y] == "":
-                    n += 1
-                i -= 1
-            limits["U"] = (x, i + 2)
-
-        return limits
-
-    def possible_moves(self, location, board, tiles):
-        """
-        Given a location on the board and list of tiles, returns all moves that can be played
-        """  
-        moves = []
-        x = location[0]
-        y = location[1]
-        limits = self.playable_squares(location, board)
-        xL = limits["L"][0]
-        xR = limits["R"][0]
-        yU = limits["U"][1]
-        yD = limits["D"][1]
-        words = {1:[], 2:[], 3:[], 4:[], 5:[], 6:[], 7:[], 8:[], 9:[], 10:[], 11:[], 12:[], 13:[], 14:[], 15:[]}
-        for word in DICTIONARY:
-            words[len(word)].append(word)
-
-        # Horizontally
-        # Starting square
-        for i in range(xL, x + 1):
-            # Word length
-            for j in range(max(2, x - i + 1), 16 - i):
-            # For each word of length, j, in the dictionary
-                for word in words[j]:
-                    if self.is_valid_move(board, word, location, "A"):
-                        print(word)
-        
-        return moves
-
-class ScrabbleAI():
-    """
-    Scrabble game player
-    """
-    def __init__(self, players=2):
-
-        # Number of players
-        self.players = players
-
 class Move():
     """
     Represents a possible Scrabble move
@@ -781,87 +417,85 @@ class Move():
         print("Start:\t\t" + self.start)
         print("Direction:\t" + self.direction)
 
-class Pattern():
-    """
-    """
-    def __init__(self, pattern, start, direction):
-
-        self.pattern = pattern
-        self.start = start
-        self.direction = direction
-
-def is_word(word):
-    """
-    Returns True if word in dictionary, otherwise returns False
-    """
-    if word in DICTIONARY:
-        return True
-    else:
-        return False
-
-def possible_words(tiles):
-    """
-    Returns a dictionary of all possible words formed from a list of tiles, grouped by word length
-    """
-    words = {1:[], 2:[], 3:[], 4:[], 5:[], 6:[], 7:[], 8:[], 9:[], 10:[], 11:[], 12:[], 13:[], 14:[], 15:[]}
-    for word in DICTIONARY:
-        tiles_remaining = copy.deepcopy(tiles)
-        for i in range(len(word)):
-            letter = word[i]
-            if letter in tiles_remaining:
-                tiles_remaining.remove(letter)
-                if i == len(word) - 1:
-                    words[len(word)].append(word)
-            else:
-                if " " in tiles_remaining:
-                    tiles_remaining.remove(" ")
-                    if i == len(word) - 1:
-                        words[len(word)].append(word)
-                else:
-                    break
-    return words
-
-def play_first_move(tiles):
-    """
-    Returns the word that will score the highest number of points on the first move, given a list of tiles
-    """
-    words = possible_words(tiles)
-    max_score = 0
-    # Starting square
-    for i in range(1, 8):
-        # Word length
-        for j in range(max(2, 8 - i), 8):
-            # For each word of length, j, in the dictionary
-            for word in words[j]:
-                score = 0
-                tiles_remaining = copy.deepcopy(tiles)
-                # For each letter in the word
-                for k in range(len(word)):
-                    letter = word[k]
-                    if letter in tiles_remaining:
-                        tiles_remaining.remove(letter)
-                        score += SCORES[letter] * LETTER_MULTIPLIERS[7][i + k]
-                    else:
-                        tiles_remaining.remove(" ")
-                score *= 2
-                if score > max_score:
-                    max_score = score
-                    max_word = word
+# def possible_moves_row(row, row_index, tiles, direction):
+#     """
+#     """
+#     patterns = []
+#     i = 0
+#     while i < 15:
+#         n = 0
+#         if row[i] == "":
+#             n += 1
+#         if i == 0 or row[i - 1] == "":
+#             j = i + 1
+#             while j < 15:
+#                 if row[j] == "":
+#                     n += 1
+#                 if n in range(1, 8):
+#                     if j == 14:
+#                         if direction == "A":
+#                             patterns.append([row[i:j + 1], (row_index, i), "A"])
+#                         if direction == "D":
+#                             patterns.append([row[i:j + 1], (i, row_index), "D"])
+#                     else:
+#                         if row[j + 1] == "":
+#                             if direction == "A":
+#                                 patterns.append([row[i:j + 1], (row_index, i), "A"])
+#                             if direction == "D":
+#                                 patterns.append([row[i:j + 1], (i, row_index), "D"])
+#                 j += 1
+#         i += 1
     
-    return max_word, max_score
+#     patterns_copy = []
+#     for i in range(len(patterns)):
+#         pattern = patterns[i][0]
+#         tmp = False
+#         for char in pattern:
+#             if char != "":
+#                 tmp = True
+#                 break
+#         if tmp == True:
+#             patterns_copy.append(patterns[i])
 
-def play_second_move(board, tiles):
-    """
-    Returns the word that will score the highest number of points on the second move, given the board and a list of tiles
-    """
-    # for i in range(15):
-    #     for j in range(15):
-    #         if board[i][j] != "":
-    #             for x in range(0, j):
-    #                 for k in range(, 8)
+#     patterns = patterns_copy
+
+#     moves = []
+#     for i in range(len(patterns)):
+#         pattern = patterns[i][0]
+#         location = patterns[i][1]
+#         direction = patterns[i][2]
+#         for word in DICTIONARY:
+#             if pattern_match(word, pattern, tiles):
+#                 moves.append([word, location, direction])
+
+#     return moves
 
 def possible_moves_row(row, row_index, tiles, direction):
     """
+    Returns a list of possible moves for a given row
+    """
+    patterns = []
+    blank = "."
+    for i in range(15):
+            for j in range(i, 15):
+                    pattern = row[i:j + 1]
+                    # Pattern is only valid if it is has blanks before and after it
+                    if (i == 0 or row[i - 1] == blank) and (j == 14 or row[j + 1] == blank):
+                            count_blanks = 0
+                            count_letters = 0
+                            for character in pattern:
+                                    if character == blank:
+                                            count_blanks += 1
+                                    else:
+                                            count_letters += 1
+                            # Pattern is only valid if it has between 1 and 7 blanks and at least 1 letter
+                            if count_blanks in range(1, 8) and count_letters > 0:
+                                    patterns.append([pattern, (row_index, i), "A"])
+    return patterns
+
+def possible_moves_row_old(row, row_index, tiles, direction):
+    """
+    Returns a list of possible moves for a given row
     """
     patterns = []
     i = 0
@@ -889,29 +523,31 @@ def possible_moves_row(row, row_index, tiles, direction):
                 j += 1
         i += 1
     
-    patterns_copy = []
-    for i in range(len(patterns)):
-        pattern = patterns[i][0]
-        tmp = False
-        for char in pattern:
-            if char != "":
-                tmp = True
-                break
-        if tmp == True:
-            patterns_copy.append(patterns[i])
+    return patterns
 
-    patterns = patterns_copy
+    # patterns_copy = []
+    # for i in range(len(patterns)):
+    #     pattern = patterns[i][0]
+    #     tmp = False
+    #     for char in pattern:
+    #         if char != "":
+    #             tmp = True
+    #             break
+    #     if tmp == True:
+    #         patterns_copy.append(patterns[i])
 
-    moves = []
-    for i in range(len(patterns)):
-        pattern = patterns[i][0]
-        location = patterns[i][1]
-        direction = patterns[i][2]
-        for word in DICTIONARY:
-            if pattern_match(word, pattern, tiles):
-                moves.append([word, location, direction])
+    # patterns = patterns_copy
 
-    return moves
+    # moves = []
+    # for i in range(len(patterns)):
+    #     pattern = patterns[i][0]
+    #     location = patterns[i][1]
+    #     direction = patterns[i][2]
+    #     for word in DICTIONARY:
+    #         if pattern_match(word, pattern, tiles):
+    #             moves.append([word, location, direction])
+
+    # return moves
 
 def pattern_match(word, pattern, tiles):
     """
@@ -1089,3 +725,448 @@ def xy_to_letter_number(xy):
     letter_number = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O"][x] + str(y + 1)
 
     return letter_number
+
+
+
+
+
+#def play_first_move(tiles):
+#     """
+#     Returns the word that will score the highest number of points on the first move, given a list of tiles
+#     """
+#     words = possible_words(tiles)
+#     max_score = 0
+#     # Starting square
+#     for i in range(1, 8):
+#         # Word length
+#         for j in range(max(2, 8 - i), 8):
+#             # For each word of length, j, in the dictionary
+#             for word in words[j]:
+#                 score = 0
+#                 tiles_remaining = copy.deepcopy(tiles)
+#                 # For each letter in the word
+#                 for k in range(len(word)):
+#                     letter = word[k]
+#                     if letter in tiles_remaining:
+#                         tiles_remaining.remove(letter)
+#                         score += SCORES[letter] * LETTER_MULTIPLIERS[7][i + k]
+#                     else:
+#                         tiles_remaining.remove(" ")
+#                 score *= 2
+#                 if score > max_score:
+#                     max_score = score
+#                     max_word = word
+    
+#     return max_word, max_score
+
+# def play_second_move(board, tiles):
+#     """
+#     Returns the word that will score the highest number of points on the second move, given the board and a list of tiles
+#     """
+#     # for i in range(15):
+#     #     for j in range(15):
+#     #         if board[i][j] != "":
+#     #             for x in range(0, j):
+#     #                 for k in range(, 8)
+
+# def possible_words(tiles):
+#     """
+#     Returns a dictionary of all possible words formed from a list of tiles, grouped by word length
+#     """
+#     words = {1:[], 2:[], 3:[], 4:[], 5:[], 6:[], 7:[], 8:[], 9:[], 10:[], 11:[], 12:[], 13:[], 14:[], 15:[]}
+#     for word in DICTIONARY:
+#         tiles_remaining = copy.deepcopy(tiles)
+#         for i in range(len(word)):
+#             letter = word[i]
+#             if letter in tiles_remaining:
+#                 tiles_remaining.remove(letter)
+#                 if i == len(word) - 1:
+#                     words[len(word)].append(word)
+#             else:
+#                 if " " in tiles_remaining:
+#                     tiles_remaining.remove(" ")
+#                     if i == len(word) - 1:
+#                         words[len(word)].append(word)
+#                 else:
+#                     break
+#     return words
+
+# def is_word(word):
+#     """
+#     Returns True if word in dictionary, otherwise returns False
+#     """
+#     if word in DICTIONARY:
+#         return True
+#     else:
+#         return False
+
+# class Pattern():
+#     """
+#     """
+#     def __init__(self, pattern, start, direction):
+
+#         self.pattern = pattern
+#         self.start = start
+#         self.direction = direction
+
+# class ScrabbleAI():
+#     """
+#     Scrabble game player
+#     """
+#     def __init__(self, players=2):
+
+#         # Number of players
+#         self.players = players
+
+# class Scrabble_old():
+#     """
+#     Scrabble game representation
+#     """
+#     def __init__(self, players=2):
+
+#         # Number of players
+#         self.players = players
+
+#         # Scores for each player
+#         self.scores = {}
+#         for i in range(players):
+#             self.scores[i + 1] = 0
+
+#         # Turn
+#         self.turn = 1
+
+#         # Tiles
+#         self.tiles = [" ", " ", "A", "A", "A", "A", "A", "A", "A", "A", "A", "B", "B", "C", "C",
+#                       "D", "D", "D", "D", "E", "E", "E", "E", "E", "E", "E", "E", "E", "E", "E",
+#                       "E", "F", "F", "G", "G", "G", "H", "H", "I", "I", "I", "I", "I", "I", "I",
+#                       "I", "I", "J", "K", "L", "L", "L", "L", "M", "M", "N", "N", "N", "N", "N",
+#                       "N", "O", "O", "O", "O", "O", "O", "O", "O", "P", "P", "Q", "R", "R", "R",
+#                       "R", "R", "R", "S", "S", "S", "S", "T", "T", "T", "T", "T", "T", "U", "U",
+#                       "U", "U", "V", "V", "W", "W", "X", "Y", "Y", "Z"
+#                      ]
+#         random.shuffle(self.tiles)
+
+#         # Give seven tiles to each player
+#         self.hands = {}
+#         for i in range(players):
+#             self.hands[i + 1] = self.tiles[0:7]
+#             del(self.tiles[0:7])
+
+#         # Board
+#         self.board = [["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+#                       ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+#                       ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+#                       ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+#                       ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+#                       ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+#                       ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+#                       ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+#                       ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+#                       ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+#                       ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+#                       ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+#                       ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+#                       ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+#                       ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]
+#                      ]
+        
+#     def print(self):
+#         """
+#         Prints current board in user-friendly format
+#         """
+#         print("\nBoard:")
+#         print("\n    A B C D E F G H I J K L M N O")
+#         for i in range(15):
+#             row = ""
+#             for j in range(15):
+#                 if self.board[i][j] == "":
+#                     row += " _"
+#                 else:
+#                     row += " " + self.board[i][j]
+#             print((" " + str(i + 1))[-2:], row)
+#         print("")
+
+    # def scan_board(self, board):
+    #     """
+    #     Returns a list of all words on the board and the squares they occupy
+    #     """
+    #     words = []
+    #     # Scan rows
+    #     for i in range(15):
+    #         word = ""
+    #         location = []
+    #         for j in range(15):
+    #             letter = board[i][j]
+    #             if letter == "":
+    #                 if len(word) > 1:
+    #                     words.append((word, location))
+    #                 word = ""
+    #                 location = []
+    #             else:
+    #                 word += letter
+    #                 location.append((j, i))
+        
+    #     # Scan columns
+    #     for i in range(15):
+    #         word = ""
+    #         location = []
+    #         for j in range(15):
+    #             letter = board[j][i]
+    #             if letter == "":
+    #                 if len(word) > 1:
+    #                     words.append((word, location))
+    #                 word = ""
+    #                 location = []
+    #             else:
+    #                 word += letter
+    #                 location.append((i, j))
+        
+    #     return words
+
+    # def compare_boards(self, board_before, board_after):
+    #     """
+    #     Returns list of locations where tiles have been played on most recent turn
+    #     """
+    #     locations = []
+    #     for i in range(15):
+    #         for j in range(15):
+    #             if board_before[i][j] != board_after[i][j]:
+    #                 locations.append((j, i))
+        
+    #     return locations
+
+    # def new_words(self, board_before, board_after):
+    #     """
+    #     Returns list of all new words on board after move played and where they are located
+    #     """
+    #     words = []
+    #     words_before = self.scan_board(board_before)
+    #     words_after = self.scan_board(board_after)
+
+    #     for word in words_after:
+    #         if word in words_before:
+    #             words_before.remove(word)
+    #         else:
+    #             words.append(word)
+
+    #     return words
+
+    # def score_word(self, word, board_before, board_after):
+    #     """
+    #     Returns number of points scored for a word
+    #     """
+    #     points = 0
+    #     word_multiplier = 1
+    #     locations = self.compare_boards(board_before, board_after)
+    #     for i in range(len(word[0])):
+    #         letter = word[0][i]
+    #         x = word[1][i][0]
+    #         y = word[1][i][1]
+    #         if (x, y) in locations:
+    #             points += SCORES[letter] * LETTER_MULTIPLIERS[y][x]
+    #             word_multiplier *= WORD_MULTIPLIERS[y][x]
+    #         else:
+    #             points += SCORES[letter]
+    #     points = points * word_multiplier
+
+    #     return points
+
+    # def score_move(self, board_before, board_after):
+    #     """
+    #     Returns number of points scored for a move
+    #     """
+    #     points = 0
+    #     words = self.new_words(board_before, board_after)
+    #     for word in words:
+    #         points += self.score_word(word, board_before, board_after)
+
+    #     return points
+
+    # def play_word(self, word, start, direction):
+    #     """
+    #     Plays a word on board and updates scores accordingly
+    #     """
+    #     # Play word on board
+    #     board_before = copy.deepcopy(self.board)
+    #     x = COORDINATES[start]["A"]
+    #     y = COORDINATES[start]["D"]
+    #     for i in range(len(word)):
+    #         letter = word[i]
+    #         if direction == "A":
+    #             if self.board[y][x + i] == "":
+    #                 self.board[y][x + i] = letter
+    #                 self.hands[self.turn].remove(letter)
+    #         if direction == "D":
+    #             if self.board[y + i][x] == "":
+    #                 self.board[y + i][x] = letter
+    #                 self.hands[self.turn].remove(letter)
+    #     board_after = copy.deepcopy(self.board)
+
+    #     # Update scores
+    #     self.scores[self.turn] += self.score_move(board_before, board_after)
+
+    #     if len(self.hands[self.turn]) == 0:
+    #         self.scores[self.turn] += 50
+        
+    #     # locations = []
+    #     # for i in range(len(word)):
+    #     #     locations.append((x, y))
+    #     #     if direction == "A":
+    #     #         x += 1
+    #     #     if direction == "D":
+    #     #         y += 1
+    #     # score = 0
+    #     # word_multiplier = 1
+    #     # for location in locations:
+    #     #     x = location[0]
+    #     #     y = location[1]
+    #     #     score += SCORES[self.board[y][x]] * LETTER_MULTIPLIERS[y][x]
+    #     #     if BOARD[y][x] == "DW":
+    #     #         word_multiplier = 2
+    #     #     if BOARD[y][x] == "TW":
+    #     #         word_multiplier = 3
+    #     # self.scores[self.turn] += score * word_multiplier
+        
+    #     # Update turn
+    #     self.turn = (self.turn % self.players) + 1
+    
+    # def draw_tiles(self):
+    #     """
+    #     Draws tiles to the current player's hand
+    #     """
+    #     draw = 7 - len(self.hands[self.turn])
+    #     for tile in self.tiles[0:draw]:
+    #         self.hands[self.turn].append(tile)
+    #     del(self.tiles[0:draw])
+
+    # def is_valid_move(self, board, word, location, direction):
+    #     """
+    #     Returns True if word can be played on board from starting square in given direction, otherwise returns False
+    #     """
+    #     x = location[0]
+    #     y = location[1]
+
+    #     # Check if word in dictionary
+    #     if word not in DICTIONARY:
+    #         return False
+        
+    #     # Check if there is enough space to play word on board from starting square in given direction
+    #     if direction == "A":
+    #         if x + len(word) > 15:
+    #             return False
+    #     if direction == "D":
+    #         if y + len(word) > 15:
+    #             return False
+        
+    #     # Check if word will fit with existing letters on the board
+    #     if direction == "A":
+    #         for i in range(len(word)):
+    #             letter = word[i]
+    #             if board[y][x + i] != "" and board[y][x + i] != letter:
+    #                 return False
+    #     if direction == "D":
+    #         for i in range(len(word)):
+    #             letter = word[i]
+    #             if board[y + i][x] != "" and board[y + i][x] != letter:
+    #                 return False
+
+    #     # Check if playing word will result in any invalid words
+
+    #     # Play word on board
+    #     board_after = copy.deepcopy(board)
+    #     for i in range(len(word)):
+    #         letter = word[i]
+    #         if direction == "A":
+    #             if board_after[y][x + i] == "":
+    #                 board_after[y][x + i] = letter
+    #         if direction == "D":
+    #             if board_after[y + i][x] == "":
+    #                 board_after[y + i][x] = letter
+        
+    #     words = self.scan_board(board_after)
+        
+    #     for word in words:
+    #         if word[0] not in DICTIONARY:
+    #             return False
+        
+    #     return True
+
+    # def playable_squares(self, location, board):
+    #     """
+    #     Given a location on the board, returns a dictionary containing the furthest square in each direction that could possibly be reached with a move
+    #     """
+    #     limits = dict()
+    #     x = location[0]
+    #     y = location[1]
+        
+    #     # Horizontally
+    #     if x == 7:
+    #         limits["L"] = (0, y)
+    #         limits["R"] = (14, y)
+    #     if x < 7:
+    #         limits["L"] = (0, y)
+    #         i, n = x + 1, 0
+    #         while n < 8 and i <= 14:
+    #             if board[y][i] == "":
+    #                 n += 1
+    #             i += 1
+    #         limits["R"] = (i - 2, y)
+    #     if x > 7:
+    #         limits["R"] = (14, y)
+    #         i, n = x - 1, 0
+    #         while n < 8 and i >= 0:
+    #             if board[y][i] == "":
+    #                 n += 1
+    #             i -= 1
+    #         limits["L"] = (i + 2, y)
+        
+    #     # Vertically
+    #     if y == 7:
+    #         limits["U"] = (x, 0)
+    #         limits["D"] = (x, 14)
+    #     if y < 7:
+    #         limits["U"] = (x, 0)
+    #         i, n = y + 1, 0
+    #         while n < 8 and i <= 14:
+    #             if board[i][x] == "":
+    #                 n += 1
+    #             i += 1
+    #         limits["D"] = (x, i - 2)
+    #     if y > 7:
+    #         limits["D"] = (x, 14)
+    #         i, n = y - 1, 0
+    #         while n < 8 and i >= 0:
+    #             if board[i][y] == "":
+    #                 n += 1
+    #             i -= 1
+    #         limits["U"] = (x, i + 2)
+
+    #     return limits
+
+    # def possible_moves(self, location, board, tiles):
+    #     """
+    #     Given a location on the board and list of tiles, returns all moves that can be played
+    #     """  
+    #     moves = []
+    #     x = location[0]
+    #     y = location[1]
+    #     limits = self.playable_squares(location, board)
+    #     xL = limits["L"][0]
+    #     xR = limits["R"][0]
+    #     yU = limits["U"][1]
+    #     yD = limits["D"][1]
+    #     words = {1:[], 2:[], 3:[], 4:[], 5:[], 6:[], 7:[], 8:[], 9:[], 10:[], 11:[], 12:[], 13:[], 14:[], 15:[]}
+    #     for word in DICTIONARY:
+    #         words[len(word)].append(word)
+
+    #     # Horizontally
+    #     # Starting square
+    #     for i in range(xL, x + 1):
+    #         # Word length
+    #         for j in range(max(2, x - i + 1), 16 - i):
+    #         # For each word of length, j, in the dictionary
+    #             for word in words[j]:
+    #                 if self.is_valid_move(board, word, location, "A"):
+    #                     print(word)
+        
+    #     return moves
