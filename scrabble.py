@@ -18,6 +18,8 @@ BOARD = [["TW", "  ", "  ", "DL", "  ", "  ", "  ", "TW", "  ", "  ", "  ", "DL"
          ["TW", "  ", "  ", "DL", "  ", "  ", "  ", "TW", "  ", "  ", "  ", "DL", "  ", "  ", "TW"]
         ]
 
+BLANK = "."
+
 BLANK_BOARD = [["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
                ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
                ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
@@ -470,103 +472,123 @@ class Move():
 
 #     return moves
 
+# def possible_moves_row_old(row, row_index, tiles, direction):
+#     """
+#     Returns a list of possible moves for a given row
+#     """
+#     patterns = []
+#     i = 0
+#     while i < 15:
+#         n = 0
+#         if row[i] == "":
+#             n += 1
+#         if i == 0 or row[i - 1] == "":
+#             j = i + 1
+#             while j < 15:
+#                 if row[j] == "":
+#                     n += 1
+#                 if n in range(1, 8):
+#                     if j == 14:
+#                         if direction == "A":
+#                             patterns.append([row[i:j + 1], (row_index, i), "A"])
+#                         if direction == "D":
+#                             patterns.append([row[i:j + 1], (i, row_index), "D"])
+#                     else:
+#                         if row[j + 1] == "":
+#                             if direction == "A":
+#                                 patterns.append([row[i:j + 1], (row_index, i), "A"])
+#                             if direction == "D":
+#                                 patterns.append([row[i:j + 1], (i, row_index), "D"])
+#                 j += 1
+#         i += 1
+    
+#     return patterns
+
+#     # patterns_copy = []
+#     # for i in range(len(patterns)):
+#     #     pattern = patterns[i][0]
+#     #     tmp = False
+#     #     for char in pattern:
+#     #         if char != "":
+#     #             tmp = True
+#     #             break
+#     #     if tmp == True:
+#     #         patterns_copy.append(patterns[i])
+
+#     # patterns = patterns_copy
+
+#     # moves = []
+#     # for i in range(len(patterns)):
+#     #     pattern = patterns[i][0]
+#     #     location = patterns[i][1]
+#     #     direction = patterns[i][2]
+#     #     for word in DICTIONARY:
+#     #         if pattern_match(word, pattern, tiles):
+#     #             moves.append([word, location, direction])
+
+#     # return moves
+
+#def pattern_match(word, pattern, tiles):
+#     """
+#     """
+#     if len(word) != len(pattern):
+#         return False
+
+#     tiles_remaining = copy.deepcopy(tiles)
+#     for i in range(len(word)):
+#         if word[i] != pattern[i]:
+#             if pattern[i] == "":
+#                 if word[i] in tiles_remaining:
+#                     tiles_remaining.remove(word[i])
+#                 else:
+#                     return False
+#             else:
+#                 return False
+
+#     return True
+
 def possible_moves_row(row, row_index, tiles, direction):
     """
     Returns a list of possible moves for a given row
     """
     patterns = []
-    blank = "."
     for i in range(15):
             for j in range(i, 15):
                     pattern = row[i:j + 1]
                     # Pattern is only valid if it is has blanks before and after it
-                    if (i == 0 or row[i - 1] == blank) and (j == 14 or row[j + 1] == blank):
+                    if (i == 0 or row[i - 1] == BLANK) and (j == 14 or row[j + 1] == BLANK):
                             count_blanks = 0
                             count_letters = 0
                             for character in pattern:
-                                    if character == blank:
+                                    if character == BLANK:
                                             count_blanks += 1
                                     else:
                                             count_letters += 1
                             # Pattern is only valid if it has between 1 and 7 blanks and at least 1 letter
                             if count_blanks in range(1, 8) and count_letters > 0:
-                                    patterns.append([pattern, (row_index, i), "A"])
-    return patterns
-
-def possible_moves_row_old(row, row_index, tiles, direction):
-    """
-    Returns a list of possible moves for a given row
-    """
-    patterns = []
-    i = 0
-    while i < 15:
-        n = 0
-        if row[i] == "":
-            n += 1
-        if i == 0 or row[i - 1] == "":
-            j = i + 1
-            while j < 15:
-                if row[j] == "":
-                    n += 1
-                if n in range(1, 8):
-                    if j == 14:
-                        if direction == "A":
-                            patterns.append([row[i:j + 1], (row_index, i), "A"])
-                        if direction == "D":
-                            patterns.append([row[i:j + 1], (i, row_index), "D"])
-                    else:
-                        if row[j + 1] == "":
-                            if direction == "A":
-                                patterns.append([row[i:j + 1], (row_index, i), "A"])
-                            if direction == "D":
-                                patterns.append([row[i:j + 1], (i, row_index), "D"])
-                j += 1
-        i += 1
+                                    if direction == "A":
+                                        patterns.append(Move(pattern, xy_to_letter_number((i, row_index)), direction))
+                                    if direction == "D":
+                                        patterns.append(Move(pattern, xy_to_letter_number((row_index, i)), direction))
     
-    return patterns
+    moves = []
+    for pattern in patterns:
+        for word in DICTIONARY:
+            if len(pattern.word) == len(word):
+                tiles_remaining = copy.deepcopy(tiles)
+                for i in range(len(word)):
+                    if word[i] != pattern.word[i]:
+                        if pattern.word[i] == BLANK:
+                            if word[i] in tiles_remaining:
+                                tiles_remaining.remove(word[i])
+                                if i == len(word) - 1:
+                                    moves.append(Move(word, pattern.start, pattern.direction))
+                            else:
+                                break
+                        else:
+                            break
 
-    # patterns_copy = []
-    # for i in range(len(patterns)):
-    #     pattern = patterns[i][0]
-    #     tmp = False
-    #     for char in pattern:
-    #         if char != "":
-    #             tmp = True
-    #             break
-    #     if tmp == True:
-    #         patterns_copy.append(patterns[i])
-
-    # patterns = patterns_copy
-
-    # moves = []
-    # for i in range(len(patterns)):
-    #     pattern = patterns[i][0]
-    #     location = patterns[i][1]
-    #     direction = patterns[i][2]
-    #     for word in DICTIONARY:
-    #         if pattern_match(word, pattern, tiles):
-    #             moves.append([word, location, direction])
-
-    # return moves
-
-def pattern_match(word, pattern, tiles):
-    """
-    """
-    if len(word) != len(pattern):
-        return False
-
-    tiles_remaining = copy.deepcopy(tiles)
-    for i in range(len(word)):
-        if word[i] != pattern[i]:
-            if pattern[i] == "":
-                if word[i] in tiles_remaining:
-                    tiles_remaining.remove(word[i])
-                else:
-                    return False
-            else:
-                return False
-
-    return True
+    return moves
 
 def possible_moves(board, tiles):
     """
@@ -575,13 +597,19 @@ def possible_moves(board, tiles):
     
     # Horizontally
     for i in range(15):
-        moves_row = possible_moves_row(board[i][:], i, tiles, "A")
+        row = ""
+        for character in board[i][:]:
+            row += character
+        moves_row = possible_moves_row(row, i, tiles, "A")
         for move in moves_row:
             moves.append(move)
 
     # Vertically
     for i in range(15):
-        moves_column = possible_moves_row([row[i] for row in board], i, tiles, "D")
+        column = ""
+        for character in [row[i] for row in board]:
+            column += character
+        moves_column = possible_moves_row(column, i, tiles, "D")
         for move in moves_column:
             moves.append(move)
 
@@ -689,18 +717,33 @@ def play_word(board, word, start, direction):
     """
     board_after = copy.deepcopy(board)
     # Play word on board
-    x = start[1]
-    y = start[0]
+    A = COORDINATES[start]["A"]
+    D = COORDINATES[start]["D"]
     for i in range(len(word)):
         letter = word[i]
         if direction == "A":
-            board_after[y][x + i] = letter
+            board_after[D][A + i] = letter
         if direction == "D":
-            board_after[y + i][x] = letter
+            board_after[D + i][A] = letter
 
     return board_after
 
 def max_move(board, tiles):
+    """
+    Given board and list of tiles, returns move that will score maximum number of points
+    """
+    moves = possible_moves(board, tiles)
+    points = 0
+    for move in moves:
+        move.print()
+        score = score_move(board, play_word(board, move.word, move.start, move.direction))
+        if score > points:
+            max_move = move
+            points = score
+
+    return max_move, points
+
+def max_move_old(board, tiles):
     """
     Given board and list of tiles, returns move that will score maximum number of points
     """
