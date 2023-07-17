@@ -1,23 +1,5 @@
 from scrabble import *
 
-# Test board
-TEST_BOARD = [["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-              ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-              ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-              ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-              ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-              ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-              ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-              ["", "", "", "", "", "", "", "H", "E", "L", "L", "O", "", "", ""],
-              ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-              ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-              ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-              ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-              ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-              ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-              ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]
-             ]
-
 # Prompt user for number of players
 input_invalid = True
 while input_invalid:
@@ -55,26 +37,21 @@ while input_invalid:
             print("Must play as Player 1, 2, 3 or 4")       
 
 # Create game
-game = Scrabble(players=players, board=TEST_BOARD)
+game = Scrabble(players=players)
 
 # Run game
 turn = 1
 count = 1
 
-while count < 2:
+while count < 50:
     # Print board
     game.print()
-
-    # # Print scores
-    # print("Scores")
-    # for i in range(1, players + 1):
-    #     print("Player " + str(i) + ":\t\t" + str(0)) 
 
     # Print which player's turn it is
     print("\nTurn:\t\t\tPlayer", turn)
 
     # If it is the user's turn, prompt user for tiles and print AI suggestion
-    if turn == player:
+    if player == turn:
         input_invalid = True
         while input_invalid:
             input_invalid = False
@@ -91,7 +68,7 @@ while count < 2:
                 print("Invalid tiles - Number of tiles must be between 1 and 7")
                 input_invalid = True
 
-        #print("AI suggestion:\t\tFOOBAR, H8, ACROSS (100 points)")
+        # Print AI suggestion
         move = max_move(game.board, tiles)
         word_ai = move[0].word
         start_ai = str(move[0].start)
