@@ -1,4 +1,5 @@
 import copy
+import time
 
 BLANK = "."
 
@@ -387,11 +388,12 @@ class Move():
     """
     Scrabble move representation
     """
-    def __init__(self, word, start, direction):
+    def __init__(self, word, start, direction, score=-1):
 
         self.word = word
         self.start = start
         self.direction = direction
+        self.score = score
 
     def print(self):
         """
@@ -399,7 +401,8 @@ class Move():
         """
         print("Word:\t\t" + self.word)
         print("Start:\t\t" + self.start)
-        print("Direction:\t" + self.direction + "\n")
+        print("Direction:\t" + self.direction)
+        print("Score:\t\t" + str(self.score))
 
 def possible_moves_row(row, row_index, tiles, direction):
     """
@@ -421,10 +424,13 @@ def possible_moves_row(row, row_index, tiles, direction):
                             # Pattern is only valid if it has between 1 and 7 blanks and at least 1 letter
                             if count_blanks in range(1, 8) and count_letters > 0:
                                     if direction == "A":
-                                        patterns.append(Move(pattern, xy_to_letter_number((i, row_index)), direction))
+                                        patterns.append(Move("".join(pattern), xy_to_letter_number((i, row_index)), direction))
                                     if direction == "D":
-                                        patterns.append(Move(pattern, xy_to_letter_number((row_index, i)), direction))
-    
+                                        patterns.append(Move("".join(pattern), xy_to_letter_number((row_index, i)), direction))
+
+    for pattern in patterns:
+        pattern.print()
+    start = time.time()
     moves = []
     for pattern in patterns:
         for word in DICTIONARY:
@@ -441,8 +447,10 @@ def possible_moves_row(row, row_index, tiles, direction):
                                 break
                         else:
                             break
-
+    print(time.time() - start)
+    
     return moves
+    
 
 def possible_moves(board, tiles):
     """
@@ -599,17 +607,17 @@ def max_move(board, tiles):
     Given board and list of tiles, returns move that will score maximum number of points
     """
     if board == BOARD_BLANK:
-        max_move, points = max_first_move(tiles)
+        max_move = max_first_move(tiles)
     else:
         moves = possible_moves(board, tiles)
-        points = 0
+        max_score = 0
         for move in moves:
-            score = score_move(board, play_word(board, move.word, move.start, move.direction))
-            if score > points:
+            move.score = score_move(board, play_word(board, move.word, move.start, move.direction))
+            if move.score > max_score:
                 max_move = move
-                points = score
+                max_score = move.score
 
-    return max_move, points
+    return max_move
 
 def xy_to_letter_number(xy):
     """
@@ -667,7 +675,7 @@ def max_first_move(tiles):
                         tiles_remaining.remove(" ")
                 score *= 2
                 if score > max_score:
-                    max_score = score
-                    max_word = Move(word, "H" + str(i + 1), "D")
+                    max_word = Move(word, "H" + str(i + 1), "D", score)
+                    max_score = max_word.score
     
-    return max_word, max_score
+    return max_word
