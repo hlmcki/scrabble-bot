@@ -43,7 +43,7 @@ game = Scrabble(players=players)
 turn = 1
 count = 1
 
-while count < 4:
+while count < 100:
     # Print board
     game.print()
 
@@ -69,8 +69,13 @@ while count < 4:
                 input_invalid = True
 
         # Print AI suggestion
-        move = max_move(game.board, tiles)
-        print("AI suggestion:\t\t" + move.word + ", " + move.start + ", " + move.direction + " (" + str(move.score) + " points" + ")")
+        moves = max_moves(game.board, tiles, 5)
+        for i in range(len(moves)):
+            move = moves[-1 - i]
+            if i == 0:
+                print("AI suggestion:\t\t" + move.word + ", " + move.start + ", " + move.direction + " (" + str(move.score) + " points" + ")")
+            else:
+                print("\t\t\t" + move.word + ", " + move.start + ", " + move.direction + " (" + str(move.score) + " points" + ")")
 
     # Prompt user for word, start and direction
     input_invalid = True

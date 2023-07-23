@@ -1,5 +1,4 @@
 import copy
-import time
 
 BLANK = "."
 
@@ -428,29 +427,30 @@ def possible_moves_row(row, row_index, tiles, direction):
                                     if direction == "D":
                                         patterns.append(Move("".join(pattern), xy_to_letter_number((row_index, i)), direction))
 
-    for pattern in patterns:
-        pattern.print()
-    start = time.time()
+    row_tiles = []
+    for i in range(15):
+        if row[i].isalpha():
+            row_tiles.append(row[i])
+    
+    DICTIONARY_ABRIDGED = possible_words([*tiles, *row_tiles])
+
     moves = []
     for pattern in patterns:
-        for word in DICTIONARY:
-            if len(pattern.word) == len(word):
-                tiles_remaining = copy.deepcopy(tiles)
-                for i in range(len(word)):
-                    if word[i] != pattern.word[i]:
-                        if pattern.word[i] == BLANK:
-                            if word[i] in tiles_remaining:
-                                tiles_remaining.remove(word[i])
-                                if i == len(word) - 1:
-                                    moves.append(Move(word, pattern.start, pattern.direction))
-                            else:
-                                break
+        for word in DICTIONARY_ABRIDGED[len(pattern.word)]:
+            tiles_remaining = copy.deepcopy(tiles)
+            for i in range(len(word)):
+                if word[i] != pattern.word[i]:
+                    if pattern.word[i] == BLANK:
+                        if word[i] in tiles_remaining:
+                            tiles_remaining.remove(word[i])
+                            if i == len(word) - 1:
+                                moves.append(Move(word, pattern.start, pattern.direction))
                         else:
                             break
-    print(time.time() - start)
+                    else:
+                        break
     
     return moves
-    
 
 def possible_moves(board, tiles):
     """
@@ -602,22 +602,26 @@ def play_word(board, word, start, direction):
 
     return board_after
 
-def max_move(board, tiles):
+def max_moves(board, tiles, n=1):
     """
-    Given board and list of tiles, returns move that will score maximum number of points
+    Given board and list of tiles, returns top n moves that will score the most points
     """
     if board == BOARD_BLANK:
-        max_move = max_first_move(tiles)
+        top_moves = max_first_moves(tiles, n)
     else:
         moves = possible_moves(board, tiles)
         max_score = 0
+        top_moves = []
         for move in moves:
             move.score = score_move(board, play_word(board, move.word, move.start, move.direction))
-            if move.score > max_score:
+            if move.score >= max_score:
                 max_move = move
                 max_score = move.score
+                top_moves.append(max_move)
+                if len(top_moves) > n:
+                    del top_moves[0]
 
-    return max_move
+    return top_moves
 
 def xy_to_letter_number(xy):
     """
@@ -651,12 +655,13 @@ def possible_words(tiles):
                     break
     return words
 
-def max_first_move(tiles):
+def max_first_moves(tiles, n):
     """
-    Returns the word that will score the highest number of points on the first move, given a list of tiles
+    Returns top n words that will score the most points on the first move, given a list of tiles
     """
     words = possible_words(tiles)
     max_score = 0
+    top_moves = []
     # Starting square
     for i in range(1, 8):
         # Word length
@@ -674,8 +679,11 @@ def max_first_move(tiles):
                     else:
                         tiles_remaining.remove(" ")
                 score *= 2
-                if score > max_score:
+                if score >= max_score:
                     max_word = Move(word, "H" + str(i + 1), "D", score)
                     max_score = max_word.score
+                    top_moves.append(max_word)
+                    if len(top_moves) > n:
+                        del top_moves[0]
     
-    return max_word
+    return top_moves
