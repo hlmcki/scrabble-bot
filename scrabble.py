@@ -446,7 +446,12 @@ def possible_moves_row(row, row_index, tiles, direction):
                             if i == len(word) - 1:
                                 moves.append(Move(word, pattern.start, pattern.direction))
                         else:
-                            break
+                            if " " in tiles_remaining:
+                                tiles_remaining.remove(" ")
+                                if i == len(word) - 1:
+                                    moves.append(Move(word, pattern.start, pattern.direction))
+                            else:
+                                break
                     else:
                         break
     
