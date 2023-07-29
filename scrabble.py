@@ -576,6 +576,8 @@ def score_word(word, board_before, board_after):
         else:
             points += SCORES[letter]
     points = points * word_multiplier
+    if len(locations) == 7:
+        points += 50
 
     return points
 
@@ -616,15 +618,10 @@ def max_moves(board, tiles, n=1):
     else:
         moves = possible_moves(board, tiles)
         max_score = 0
-        top_moves = []
         for move in moves:
             move.score = score_move(board, play_word(board, move.word, move.start, move.direction))
-            if move.score >= max_score:
-                max_move = move
-                max_score = move.score
-                top_moves.append(max_move)
-                if len(top_moves) > n:
-                    del top_moves[0]
+        moves.sort(key=lambda x: x.score, reverse=True)
+        top_moves = moves[0:n]
 
     return top_moves
 
