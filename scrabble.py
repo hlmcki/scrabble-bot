@@ -689,3 +689,16 @@ def max_first_moves(tiles, n):
                         del top_moves[0]
     
     return top_moves
+
+def board_dict_to_list(board_dict):
+    """
+    Converts board from dictionary representation to list representation
+    """
+    cols = {'A': 1, 'B': 2, 'C': 3, 'D': 4, 'E': 5, 'F': 6, 'G': 7, 'H': 8, 'I': 9, 'J': 10, 'K': 11, 'L': 12, 'M': 13, 'N': 14, 'O':15}
+    board_list = copy.deepcopy(BOARD_BLANK)
+    for key in COORDINATES.keys():
+        row = key[1:]
+        col = cols[key[0]]
+        board_list[row][col] = board_dict[key]
+        
+    return board_list

@@ -2,7 +2,7 @@ import copy
 
 TILES = list("AAAAAAAAABBCCDDDDEEEEEEEEEEEEFFGGHHIIIIIIIIIJKLLLLMMNNNNNNOOOOOOOOPPQRRRRRRSSSSTTTTTTUUUUVVWWXYYZ")
 
-with open("dictionary-raw.txt", "r") as file:
+with open("dictionary-raw-MIT.txt", "r") as file:
     words = file.read()
     words = words.split("\n")
 
